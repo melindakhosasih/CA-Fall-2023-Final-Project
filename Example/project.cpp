@@ -150,6 +150,7 @@ void run_zero_cost(ifstream& fin, ofstream& fout, int index_cnt, int len, int n_
     }
 
     // Calculate Quality Measurement (Q)
+    // Count zero and one
     int zero[len] = {0}, one[len] = {0}, Q[len];
     for (int i = 0; i < addresses.size(); i++) {
         for (int j = 0; j < len; j++) {
@@ -159,19 +160,45 @@ void run_zero_cost(ifstream& fin, ofstream& fout, int index_cnt, int len, int n_
     }
 
     // Debug
-    for (int j = 0; j < len; j++) {
-        cout << one[j] << " " << zero[j] << endl;
-    }
+    // for (int j = 0; j < len; j++) {
+    //     cout << one[j] << " " << zero[j] << endl;
+    // }
 
-    // Calculate Correlation
+    // Compute Q
     for (int i = 0; i < len; i++)
-        Q[i] = min(zero[i], one[i])/ max(zero[i], one[i]);
+        Q[i] = min(zero[i], one[i]) / max(zero[i], one[i]);
 
     // Debug
-    for (int i = 0; i < len; i++)
-        cout << Q[i] << " ";
-    cout << endl;
-    
+    // for (int i = 0; i < len; i++)
+    //     cout << Q[i] << " ";
+    // cout << endl;
+
+
+    // Calculate Correlation
+    int C[len][len];
+    for (int i = 0; i < len; i++) {
+        for (int j = 0 ; j < len; j++) {
+            if (i == j) C[i][j] = 0;
+            else if (i > j) C[i][j] = C[j][i];
+            else {
+                int same = 0, diff = 0;
+                for(int k = 0; k < addresses.size(); k++) {
+                    if(addresses[k][i] == addresses[k][j]) same++;
+                    else diff++;
+                }
+                C[i][j] = min(same, diff) / max(same, diff);
+            }
+        }
+    }
+
+    // Debug
+    for (int i = 0; i < len; i++) {
+        for (int j = 0; j < len; j++) {
+            cout << C[i][j] << " ";
+        }
+        cout << endl;
+    }
+
     // Execute
     int total_miss = 0;
     fout << title << endl;
