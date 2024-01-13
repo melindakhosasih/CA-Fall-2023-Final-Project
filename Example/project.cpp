@@ -11,6 +11,14 @@ struct Cache {
     bool NRU;
 };
 
+int min(int a, int b) {
+    return (a > b) ? b : a;
+}
+
+int max(int a, int b) {
+    return (a > b) ? a : b;
+}
+
 void print_out(ofstream& fout, string str, int val) {
     fout << str << val << endl;
 }
@@ -40,7 +48,6 @@ void run_LSB(ifstream& fin, ofstream& fout, int tag_cnt, int index_cnt, int n_wa
             caches[i][j].NRU = true;
         }
     }
-
 
     // Debug
     // for (int i = 0; i < n_way; i++) {
@@ -126,7 +133,6 @@ void run_zero_cost(ifstream& fin, ofstream& fout, int index_cnt, int len, int n_
         }
     }
 
-
     // Debug
     // for (int i = 0; i < n_way; i++) {
     //     for (int j = 0; j < caches[i].size(); j++) {
@@ -144,7 +150,7 @@ void run_zero_cost(ifstream& fin, ofstream& fout, int index_cnt, int len, int n_
     }
 
     // Calculate Quality Measurement (Q)
-    int zero[len] = {0}, one[len] = {0};
+    int zero[len] = {0}, one[len] = {0}, Q[len];
     for (int i = 0; i < addresses.size(); i++) {
         for (int j = 0; j < len; j++) {
             if (addresses[i][j] == '1') one[j]++;
@@ -157,6 +163,15 @@ void run_zero_cost(ifstream& fin, ofstream& fout, int index_cnt, int len, int n_
         cout << one[j] << " " << zero[j] << endl;
     }
 
+    // Calculate Correlation
+    for (int i = 0; i < len; i++)
+        Q[i] = min(zero[i], one[i])/ max(zero[i], one[i]);
+
+    // Debug
+    for (int i = 0; i < len; i++)
+        cout << Q[i] << " ";
+    cout << endl;
+    
     // Execute
     int total_miss = 0;
     fout << title << endl;
