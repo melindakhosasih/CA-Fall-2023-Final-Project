@@ -107,6 +107,109 @@ void run_LSB(ifstream& fin, ofstream& fout, int tag_cnt, int index_cnt, int n_wa
     print_out(fout, "Total cache miss count: ", total_miss);
 }
 
+void run_zero_cost(ifstream& fin, ofstream& fout, int index_cnt, int len, int n_way) {
+    // cout << "tag bit " << tag_cnt << endl;
+    // cout << "index bit " << index_cnt << endl;
+    // cout << "sets " << (1 << index_cnt) << endl;
+
+    string str, title;
+    vector<string> addresses;
+    vector<Cache> caches[n_way];
+    
+    for (int i = 0; i < n_way; i++) {
+        caches[i].resize(1 << index_cnt);
+        // Initialize caches
+        // cout << "caches size " << caches[i].size() << endl;
+        for (int j = 0; j < caches[i].size(); j++) {
+            caches[i][j].tag = -1;
+            caches[i][j].NRU = true;
+        }
+    }
+
+
+    // Debug
+    // for (int i = 0; i < n_way; i++) {
+    //     for (int j = 0; j < caches[i].size(); j++) {
+    //         cout << caches[i][j].tag << " ";
+    //         cout << caches[i][j].NRU << endl;
+    //     }
+    // }
+
+    // Scan reference
+    getline(fin, title);
+    while (getline(fin, str)) {
+        if (str == ".end") break;
+        addresses.push_back(str);
+        cout << str << endl;
+    }
+
+    // Calculate Quality Measurement (Q)
+    int zero[len] = {0}, one[len] = {0};
+    for (int i = 0; i < addresses.size(); i++) {
+        for (int j = 0; j < len; j++) {
+            if (addresses[i][j] == '1') one[j]++;
+            else zero[j]++;
+        }
+    }
+
+    // Debug
+    for (int j = 0; j < len; j++) {
+        cout << one[j] << " " << zero[j] << endl;
+    }
+
+    // Execute
+    int total_miss = 0;
+    fout << title << endl;
+    // for (int i = 0; i < addresses.size(); i++) {
+    //     bool miss = true;
+    //     fout << addresses[i];
+
+        
+
+    //     // string tag = addresses[i].substr(0, tag_cnt);
+    //     // string index = addresses[i].substr(tag_cnt, index_cnt);
+    //     int tag_int = stoi(tag, nullptr, 2);
+    //     int index_int = stoi(index, nullptr, 2);
+    //     // cout << "tag " << tag << " " << tag_int << endl;
+    //     // cout << "index " << index << " " << index_int << endl;
+
+    //     // Check for hit
+    //     for(int i = 0; i < n_way; i++) {
+    //         if(caches[i][index_int].tag == tag_int) {
+    //             fout << " hit" << endl;
+    //             caches[i][index_int].NRU = false;
+    //             miss = false;
+    //         }
+    //     }
+
+    //     while (miss) {
+    //         bool hit = false;
+    //         // Find first 1
+    //         for(int i = 0; i < n_way; i++) {
+    //             if(caches[i][index_int].NRU) {
+    //                 fout << " miss" << endl;
+    //                 total_miss++;
+    //                 caches[i][index_int].tag = tag_int;
+    //                 caches[i][index_int].NRU = false;
+    //                 hit = true;
+    //                 break;
+    //             }
+    //         }
+
+    //         // All 0 -> Reset all to 1
+    //         if (!hit) {
+    //             for(int i = 0; i < n_way; i++) {
+    //                 caches[i][index_int].NRU = true;
+    //             }
+    //         } else {
+    //             break;
+    //         }
+    //     }
+    // }
+    fout << ".end" << endl << endl;
+    print_out(fout, "Total cache miss count: ", total_miss);
+}
+
 int main(int argc, char *argv[]){
     ifstream fin;
     ofstream fout;
@@ -146,7 +249,8 @@ int main(int argc, char *argv[]){
     print_idx(fout, "Indexing bits:", index);
 
     fin.open(argv[2], ios::in);
-    run_LSB(fin, fout, address_bit - (index_cnt + offset_cnt), index_cnt, associativity);
+    // run_LSB(fin, fout, address_bit - (index_cnt + offset_cnt), index_cnt, associativity);
+    run_zero_cost(fin, fout, index_cnt, address_bit - offset_cnt, associativity);
     fin.close();
     fout.close();
 
