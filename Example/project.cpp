@@ -147,7 +147,6 @@ void run_zero_cost(ifstream& fin, ofstream& fout, int index_cnt, int offset_cnt,
     while (getline(fin, str)) {
         if (str == ".end") break;
         addresses.push_back(str);
-        cout << str << endl;
     }
 
     // Calculate Quality Measurement (Q)
@@ -205,10 +204,10 @@ void run_zero_cost(ifstream& fin, ofstream& fout, int index_cnt, int offset_cnt,
 
     // Calculate Near-optimal Index Ordering
     set<int> indices;
-    // for (int i = 0; i < index_cnt; i++) {
+
     for (int i = 0; i < index_cnt; i++) {
         double max = -1;
-        int best_idx;
+        int best_q;
 
         // Debug
         // cout << "Updated Quality" << endl;
@@ -218,16 +217,20 @@ void run_zero_cost(ifstream& fin, ofstream& fout, int index_cnt, int offset_cnt,
         // cout << endl;
 
         for(int j = 0; j < len; j++) {
-            if (max <= Q[j]) {
-                auto it = indices.find(j);
-                if (it == indices.end()) {  // No duplicate
+            auto it = indices.find(j);
+            if (it == indices.end()) {  // No duplicate
+                if (max <= Q[j]) {
                     max = Q[j];
-                    best_idx = j;
+                    best_q = j;
                 }
             }
         }
-        for(int j = 0; j < len; j++) Q[j] *= C[j][best_idx];
-        indices.insert(best_idx);
+
+        // Update Quality
+        for(int j = 0; j < len; j++)
+            Q[j] *= C[j][best_q];
+
+        indices.insert(best_q);
     }
 
     // Debug
@@ -249,15 +252,15 @@ void run_zero_cost(ifstream& fin, ofstream& fout, int index_cnt, int offset_cnt,
     print_idx(fout, "Indexing bits:", indices_sorted);
 
     // Debug
-    cout << "tags:";
-    for (int i = 0; i < tags_sorted.size(); i++) {
-        cout << " " << tags_sorted[i];
-    }
-    cout << endl << "indices:";
-    for (int i = 0; i < indices_sorted.size(); i++) {
-        cout << " " << indices_sorted[i];
-    }
-    cout << endl;
+    // cout << "tags:";
+    // for (int i = 0; i < tags_sorted.size(); i++) {
+    //     cout << " " << tags_sorted[i];
+    // }
+    // cout << endl << "indices:";
+    // for (int i = 0; i < indices_sorted.size(); i++) {
+    //     cout << " " << indices_sorted[i];
+    // }
+    // cout << endl;
     
     // Execute
     int total_miss = 0;
@@ -274,8 +277,8 @@ void run_zero_cost(ifstream& fin, ofstream& fout, int index_cnt, int offset_cnt,
             index += addresses[i][(len + offset_cnt - 1) - indices_sorted[j]];
         }
 
-        cout << "final tag " << tag << endl;
-        cout << "final index " << index << endl;
+        // cout << "final tag " << tag << endl;
+        // cout << "final index " << index << endl;
 
         int tag_int = stoi(tag, nullptr, 2);
         int index_int = stoi(index, nullptr, 2);
